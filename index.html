@@ -3,8 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ダナン生活予算 逆算シミュレーター</title>
-<meta name="description" content="月の予算から、ダナンでどのくらいの生活ができそうかを逆算する無料シミュレーター。">
+<title>ダナン生活予算シミュレーター｜ダナン暮らし実務ノート</title>
+<meta name="description" content="家賃などの固定費を除いた月予算から、ダナンでどんな生活ができそうかを無料で逆算。ローカル学生・標準生活・日本人向けの3つの目安と比較できます。">
+<link rel="canonical" href="https://hiromumatsuura11139-ux.github.io/danang-budget-simulator/">
+<meta property="og:title" content="ダナン生活予算シミュレーター｜ダナン暮らし実務ノート">
+<meta property="og:description" content="家賃などを除いた月予算から、ダナンでどんな暮らしができるかを無料で逆算します。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://hiromumatsuura11139-ux.github.io/danang-budget-simulator/">
 <style>
 :root{
  --bg:#f7f7f5;--card:#fff;--text:#252525;--muted:#707070;--line:#e6e3dc;
@@ -52,12 +57,26 @@ input[type=number],select{width:100%;border:1px solid var(--line);border-radius:
 .advice ul{margin:6px 0 0;padding-left:20px;font-size:14px}
 .note{margin-top:18px;padding:12px 14px;border-radius:12px;background:var(--warn);font-size:13px}
 footer{margin-top:24px;font-size:12px;color:var(--muted)}
+.brandbar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0 8px;margin-bottom:8px;border-bottom:1px solid var(--line)}
+.brandbar a{color:var(--accent);text-decoration:none;font-weight:900;font-size:14px}
+.brandbar .updated{font-size:11px;color:var(--muted);white-space:nowrap}
+.brandlinks{margin-top:22px;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--card)}
+.brandlinks strong{display:block;font-size:17px;margin-bottom:6px}
+.brandlinks p{margin:0 0 12px;color:var(--muted);font-size:13px}
+.linkbuttons{display:flex;gap:8px;flex-wrap:wrap}
+.linkbuttons a{display:inline-block;padding:10px 13px;border-radius:10px;text-decoration:none;font-weight:800;font-size:13px;border:1px solid var(--line);color:var(--text);background:#fff}
+.linkbuttons a.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.ad-reserved{display:none}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header>
-  <span class="badge">逆算式・無料</span>
+  <div class="brandbar">
+    <a href="https://note.com/danang_kurashi" target="_blank" rel="noopener">ダナン暮らし実務ノート</a>
+    <span class="updated">最終更新：2026年8月29日</span>
+  </div>
+  <span class="badge">無料ツール・逆算式</span>
   <h1>家賃を除いて月○万円。ダナンではどんな生活？</h1>
   <p class="lead">
     家賃・自宅インターネットなどの固定費を除いて、1か月に自由に使える生活費を入力してください。
@@ -357,14 +376,26 @@ footer{margin-top:24px;font-size:12px;color:var(--muted)}
 
       <strong>注意：</strong>
       250万／350万／700万VNDの3つの生活基準は、公開統計そのものではなく、
-      上記価格とダナンの生活感を比較するための「シナリオ」です。現地ヒアリングで更新する前提です。
+      上記価格とダナンの生活感を比較するための「シナリオ」です。相場や生活実感の変化に合わせて随時見直します。
     </div>
   </details>
 
 </main>
 
+<section class="brandlinks">
+  <strong>ダナン暮らし実務ノート</strong>
+  <p>ダナンでの生活・手続き・支払い・交通・食事などを、日本人の生活者目線で整理しています。</p>
+  <div class="linkbuttons">
+    <a class="primary" href="https://note.com/danang_kurashi" target="_blank" rel="noopener">noteで記事を読む</a>
+  </div>
+</section>
+
+<!-- 将来の広告差し込み位置。AdSense等の広告コードはここに設置できます。 -->
+<div class="ad-reserved" id="ad-slot-after-tool" aria-hidden="true"></div>
+
 <footer>
   ※本ツールは、家賃などの固定費を除いた生活費を3つの比較基準で見るための試算ツールです。250万・350万・700万VNDの基準はシナリオとして仮置きで、公開前にダナンの学生・生活者の実感値で調整する前提です。教育費・保険・ビザ・大きな医療費などは別途必要です。
+<br>運営：<a href="https://note.com/danang_kurashi" target="_blank" rel="noopener" style="color:inherit">ダナン暮らし実務ノート</a>
 </footer>
 </div>
 
