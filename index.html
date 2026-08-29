@@ -14,8 +14,6 @@
 body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic",sans-serif;line-height:1.65}
 .wrap{max-width:980px;margin:auto;padding:26px 16px 60px}
 .badge{display:inline-block;padding:5px 10px;background:var(--soft);color:var(--accent);border-radius:999px;font-size:13px;font-weight:800}
-.js-status{margin:12px 0 0;padding:11px 13px;border-radius:12px;font-size:13px;font-weight:800;background:#fff0ee;color:#8b4037;border:1px solid #efc9c4}
-.js-status.ok{background:#edf5f2;color:#245b4d;border-color:#cfe3dc}
 h1{font-size:clamp(28px,5vw,44px);line-height:1.18;margin:12px 0 10px}
 .lead{color:var(--muted);max-width:760px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;margin-top:20px}
@@ -65,9 +63,6 @@ footer{margin-top:24px;font-size:12px;color:var(--muted)}
     家賃・自宅インターネットなどの固定費を除いて、1か月に自由に使える生活費を入力してください。
     ローカル学生・ローカル標準・日本人向けの3つの目安と比べながら、その予算でどんな暮らしができそうかを逆算します。
   </p>
-  <div id="jsStatus" class="js-status">
-    JavaScriptが動いていません。ChatGPT内のプレビューではなく、ファイルをChromeなどのブラウザで開いてください。
-  </div>
 </header>
 
 <main class="grid">
@@ -134,7 +129,7 @@ footer{margin-top:24px;font-size:12px;color:var(--muted)}
     <div class="hint">
       家賃、自宅インターネット、電気水道、教育費、保険などを除いた生活費の比較用目安です。
       「現地ならもっと安く暮らせる」というケースも含めて見られるようにしています。
-      公開前にダナンの学生・生活者の実感値で最終調整します。
+      ダナンの生活実感や相場の変化に合わせて、今後も数値を見直します。
     </div>
   </div>
 
@@ -652,19 +647,10 @@ document.querySelectorAll('[data-priority]').forEach(btn=>{
     calc();
   });
 });
-const jsStatus = document.getElementById('jsStatus');
 try {
   syncFromVnd();
-  if (jsStatus) {
-    jsStatus.textContent = 'JavaScript正常動作：VND・日本円・スライダーは連動しています。';
-    jsStatus.classList.add('ok');
-  }
 } catch (err) {
-  console.error(err);
-  if (jsStatus) {
-    jsStatus.textContent = '計算処理でエラーが発生しました：' + err.message;
-    jsStatus.classList.remove('ok');
-  }
+  console.error('Simulator initialization error:', err);
 }
 </script>
 <!--
