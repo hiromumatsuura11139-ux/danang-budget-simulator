@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ダナン生活予算 逆算シミュレーター</title>
+<meta name="description" content="月の予算から、ダナンでどのくらいの生活ができそうかを逆算する無料シミュレーター。">
+<style>
+:root{
+ --bg:#f7f7f5;--card:#fff;--text:#252525;--muted:#707070;--line:#e6e3dc;
+ --accent:#2f6d5c;--soft:#edf5f2;--warn:#fff6e5;--danger:#fff0ee;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP","Yu Gothic",sans-serif;line-height:1.65}
+.wrap{max-width:980px;margin:auto;padding:26px 16px 60px}
+.badge{display:inline-block;padding:5px 10px;background:var(--soft);color:var(--accent);border-radius:999px;font-size:13px;font-weight:800}
+.js-status{margin:12px 0 0;padding:11px 13px;border-radius:12px;font-size:13px;font-weight:800;background:#fff0ee;color:#8b4037;border:1px solid #efc9c4}
+.js-status.ok{background:#edf5f2;color:#245b4d;border-color:#cfe3dc}
+h1{font-size:clamp(28px,5vw,44px);line-height:1.18;margin:12px 0 10px}
+.lead{color:var(--muted);max-width:760px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;margin-top:20px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 4px 18px rgba(0,0,0,.03)}
+.result{position:sticky;top:16px}@media(max-width:820px){.result{position:static}}
+h2{font-size:19px;margin:0 0 12px}
+.field{margin:0 0 18px}
+label{display:block;font-size:14px;font-weight:800;margin-bottom:6px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+input[type=number],select{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;background:#fff;font-size:16px}
+.value{font-size:28px;font-weight:900;color:var(--accent);margin:4px 0}
+.hint{font-size:12px;color:var(--muted)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.two{grid-template-columns:1fr}.refgrid{grid-template-columns:1fr!important}}
+.basebox{background:var(--soft);padding:14px;border-radius:13px;margin:12px 0 18px}
+.basebox strong{display:block;font-size:16px}
+.totalbox{background:var(--soft);padding:18px;border-radius:16px;margin-bottom:14px}
+.totalbox small{display:block;color:var(--muted);font-weight:700}
+.big{font-size:34px;font-weight:900;letter-spacing:-.03em}
+.subbig{font-size:19px;font-weight:800;color:var(--accent)}
+.status{padding:13px 14px;border-radius:12px;font-weight:800;margin-bottom:16px}
+.good{background:#edf5f2;color:#245b4d}
+.mid{background:#fff6e5;color:#80611f}
+.low{background:#fff0ee;color:#8b4037}
+.breakdown{border-top:1px solid var(--line);margin-top:14px;padding-top:14px}
+.row{display:flex;justify-content:space-between;gap:12px;margin:8px 0;font-size:14px}
+.row strong{font-variant-numeric:tabular-nums}
+.progress{height:10px;background:#ece9e3;border-radius:99px;overflow:hidden;margin:4px 0 12px}
+.progress i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.priority{display:flex;gap:7px;flex-wrap:wrap}
+.priority button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 11px;cursor:pointer;font-weight:700}
+.priority button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.advice{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:13px;background:#fff}
+.advice h3{font-size:15px;margin:0 0 6px}
+.advice ul{margin:6px 0 0;padding-left:20px;font-size:14px}
+.note{margin-top:18px;padding:12px 14px;border-radius:12px;background:var(--warn);font-size:13px}
+footer{margin-top:24px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <span class="badge">逆算式・無料</span>
+  <h1>家賃を除いて月○万円。ダナンではどんな生活？</h1>
+  <p class="lead">
+    家賃・自宅インターネットなどの固定費を除いて、1か月に自由に使える生活費を入力してください。
+    ローカル学生・ローカル標準・日本人向けの3つの目安と比べながら、その予算でどんな暮らしができそうかを逆算します。
+  </p>
+  <div id="jsStatus" class="js-status">
+    JavaScriptが動いていません。ChatGPT内のプレビューではなく、ファイルをChromeなどのブラウザで開いてください。
+  </div>
+</header>
+
+<main class="grid">
+<section class="card">
+  <h2>1. 家賃などを除いて、1か月いくら使えますか？</h2>
+  <div class="basebox" style="margin-top:0">
+    <strong>ここでは「生活に使えるお金」だけを入力します</strong>
+    <div class="hint">
+      家賃・自宅インターネット・電気水道などは入力しません。
+      それらは下の「ダナンの固定費目安」で別に確認できます。
+    </div>
+  </div>
+
+  <div class="two">
+    <div class="field">
+      <label for="budgetVndInput">予算（VND）</label>
+      <input id="budgetVndInput" type="number" min="1000000" max="300000000" step="100000" value="20000000">
+      <div class="hint">例：20,000,000 VND → 20000000 と入力</div>
+    </div>
+
+    <div class="field">
+      <label for="budgetJpyInput">予算（日本円）</label>
+      <input id="budgetJpyInput" type="number" min="5000" max="2000000" step="1000" value="118000">
+      <div class="hint">こちらから入力してもVNDへ自動換算します。</div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="budgetVnd">スライダーでも調整できます</label>
+    <input id="budgetVnd" type="range" min="5000000" max="100000000" step="500000" value="20000000">
+    <div class="value" id="budgetVndOut" style="font-size:22px">20,000,000 ₫</div><div class="hint">↑ スライダー・VND入力・日本円入力と連動して変わります。</div>
+  </div>
+
+  <div class="field">
+    <label for="rate">為替：1円あたりのVND</label>
+    <input id="rate" type="number" min="100" max="300" step="1" value="170">
+    <div class="hint">為替を変えると、日本円表示も自動で更新します。</div>
+  </div>
+
+  <h2>2. 何人で暮らしますか？</h2>
+  <div class="two">
+    <div class="field">
+      <label for="adults">大人</label>
+      <select id="adults">
+        <option value="1" selected>1人</option>
+        <option value="2">2人</option>
+        <option value="3">3人</option>
+        <option value="4">4人</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="children">子ども</label>
+      <select id="children">
+        <option value="0" selected>0人</option>
+        <option value="1">1人</option>
+        <option value="2">2人</option>
+        <option value="3">3人</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="basebox">
+    <strong>比較基準は1本ではなく、3段階で見ます</strong>
+    <div class="hint">
+      家賃、自宅インターネット、電気水道、教育費、保険などを除いた生活費の比較用目安です。
+      「現地ならもっと安く暮らせる」というケースも含めて見られるようにしています。
+      公開前にダナンの学生・生活者の実感値で最終調整します。
+    </div>
+  </div>
+
+  <div class="basebox" style="background:#fff;border:1px solid var(--line)">
+    <strong>参考：ダナンで別途かかる固定費の目安</strong>
+    <div class="hint" style="margin-top:4px">
+      下の金額はシミュレーターの計算には含めていません。住居や契約条件によって大きく変わるため、予算を考えるときの参考として見てください。
+    </div>
+
+    <div class="refgrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+      <div style="border:1px solid var(--line);border-radius:12px;padding:12px">
+        <strong style="font-size:14px">家賃</strong>
+        <div class="hint" style="margin-top:6px">
+          ローカル学生・シェア：かなり安い例もあり（現地差大）<br>
+          家具付きスタジオ・通常エリア：約770万VND<br>
+          家具付きスタジオ・高めのエリア：約1,020万VND<br>
+          広めの家具付き物件：約1,250万〜1,800万VND
+        </div>
+      </div>
+
+      <div style="border:1px solid var(--line);border-radius:12px;padding:12px">
+        <strong style="font-size:14px">自宅インターネット</strong>
+        <div class="hint" style="margin-top:6px">
+          FPT基本プラン：月19.5万VND〜<br>
+          高速・上位プラン：月20万〜29.5万VND前後<br>
+          ※地域・時期・物件込みで変わります
+        </div>
+      </div>
+
+      <div style="border:1px solid var(--line);border-radius:12px;padding:12px">
+        <strong style="font-size:14px">電気・水道</strong>
+        <div class="hint" style="margin-top:6px">
+          家具付きスタジオ1人の公開データ：約94万VND／月<br>
+          エアコン利用・部屋の広さ・契約単価で上下します
+        </div>
+      </div>
+
+      <div style="border:1px solid var(--line);border-radius:12px;padding:12px">
+        <strong style="font-size:14px">携帯・データ通信</strong>
+        <div class="hint" style="margin-top:6px">
+          月10万〜20万VND程度を目安<br>
+          通話・データ量・キャリアで変わります
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <h2>3. 具体的な暮らしにすると？</h2>
+  <details>
+    <summary style="cursor:pointer;font-weight:800;margin-bottom:10px">1回あたりの金額を詳しく調整する</summary>
+
+  <p class="hint" style="margin-top:-4px;margin-bottom:12px">
+    「余裕分で何回くらい楽しめるか」を計算するための1回あたりの目安です。
+    店や使い方によって違うので、自由に変更できます。
+  </p>
+
+  <div class="two">
+    <div class="field">
+      <label for="jpMeal">日本料理 1食</label>
+      <input id="jpMeal" type="number" min="50000" max="1000000" step="10000" value="150000">
+      <div class="hint">初期値：15万VND</div>
+    </div>
+    <div class="field">
+      <label for="localMeal">ローカル外食 1食</label>
+      <input id="localMeal" type="number" min="10000" max="500000" step="5000" value="50000">
+      <div class="hint">初期値：5万VND</div>
+    </div>
+    <div class="field">
+      <label for="cafe">カフェ 1回</label>
+      <input id="cafe" type="number" min="10000" max="500000" step="5000" value="45000">
+      <div class="hint">初期値：4.5万VND</div>
+    </div>
+    <div class="field">
+      <label for="grab">Grab 1回</label>
+      <input id="grab" type="number" min="10000" max="500000" step="5000" value="60000">
+      <div class="hint">初期値：6万VND</div>
+    </div>
+  </div>
+
+  
+  </details>
+<h2>4. 何を優先したいですか？</h2>
+
+  <div class="priority">
+    <button class="active" data-priority="balanced">バランス</button>
+    <button data-priority="housing">住まい</button>
+    <button data-priority="food">食事</button>
+    <button data-priority="comfort">便利さ</button>
+    <button data-priority="saving">節約</button>
+  </div>
+  <div class="hint" style="margin-top:8px">余裕分を何に回すかで、結果のコメントが変わります。</div>
+</section>
+
+<aside class="card result">
+  <h2>あなたの予算で見ると</h2>
+
+  <div class="totalbox">
+    <small>月予算</small>
+    <div class="big" id="totalVnd">—</div>
+    <div class="subbig" id="totalJpy">—</div>
+  </div>
+
+  <div class="hint" style="margin:-6px 0 14px">
+    ※この結果は家賃・自宅インターネット・電気水道などを除いた生活費です。固定費は左側の参考欄で別に確認してください。
+  </div>
+
+  <div id="status" class="status">—</div>
+
+  <div class="advice" style="background:#fff;margin-bottom:14px">
+    <h3>3つの生活基準と比較</h3>
+    <div style="display:grid;gap:9px">
+      <div style="border:1px solid var(--line);border-radius:12px;padding:11px">
+        <div class="row"><span><strong>ローカル学生・節約ライン</strong></span><strong id="studentBase">—</strong></div>
+        <div class="hint">ローカル食中心。移動・娯楽もかなり節約する想定。</div>
+        <div id="studentCompare" class="hint" style="margin-top:4px;font-weight:800">—</div>
+      </div>
+      <div style="border:1px solid var(--line);border-radius:12px;padding:11px">
+        <div class="row"><span><strong>ローカル生活・標準ライン</strong></span><strong id="localBase">—</strong></div>
+        <div class="hint">外食やカフェも少し楽しむ中間的な想定。</div>
+        <div id="localCompare" class="hint" style="margin-top:4px;font-weight:800">—</div>
+      </div>
+      <div style="border:1px solid var(--line);border-radius:12px;padding:11px">
+        <div class="row"><span><strong>日本人が現地生活に少し余裕を持つライン</strong></span><strong id="japaneseBase">—</strong></div>
+        <div class="hint">ローカル生活を土台に、日本料理・カフェ・Grabもある程度使う想定。</div>
+        <div id="japaneseCompare" class="hint" style="margin-top:4px;font-weight:800">—</div>
+      </div>
+    </div>
+    <div class="hint" style="margin-top:8px">
+      ※生活スタイル例の計算は、真ん中の「ローカル生活・標準ライン」を基準にしています。
+    </div>
+  </div>
+
+  <div class="advice" style="background:#fbfefd;margin-bottom:14px">
+    <h3>この予算なら、ざっくりこんな暮らし</h3>
+    <div id="lifestyleSummary" style="font-size:15px;font-weight:800">—</div>
+  </div>
+
+  <div class="breakdown">
+    <div class="row"><span>生活スタイル計算の基準（ローカル標準）</span><strong id="baseline">—</strong></div>
+    <div class="row"><span>ローカル標準を引いた残り</span><strong id="surplus">—</strong></div>
+    <div class="progress"><i id="bar" style="width:0%"></i></div>
+  </div>
+
+  
+
+  <div class="advice" style="background:#f8fbfa">
+    <h3>現実的な生活スタイル例</h3>
+    <div class="hint" style="margin-bottom:10px">
+      基準生活費を確保したうえで、残った予算をどう使うかの例です。
+      それぞれの回数は、上で設定した1回あたりの金額から自動計算します。
+      予備費・貯蓄だけは、日本円で残額を確認できるようにしています。
+    </div>
+
+    <div style="display:grid;gap:10px">
+      <div style="border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff">
+        <strong>① 節約＋貯める</strong>
+        <div class="row"><span>日本料理</span><strong id="s1jp">—</strong></div>
+        <div class="row"><span>カフェ</span><strong id="s1cafe">—</strong></div>
+        <div class="row"><span>Grab</span><strong id="s1grab">—</strong></div>
+        <div class="row"><span>予備費・貯蓄（日本円）</span><strong id="s1save">—</strong></div>
+      </div>
+
+      <div style="border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff">
+        <strong>② バランス型</strong>
+        <div class="row"><span>日本料理</span><strong id="s2jp">—</strong></div>
+        <div class="row"><span>カフェ</span><strong id="s2cafe">—</strong></div>
+        <div class="row"><span>Grab</span><strong id="s2grab">—</strong></div>
+        <div class="row"><span>予備費・貯蓄（日本円）</span><strong id="s2save">—</strong></div>
+      </div>
+
+      <div style="border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff">
+        <strong>③ 便利さ重視</strong>
+        <div class="row"><span>日本料理</span><strong id="s3jp">—</strong></div>
+        <div class="row"><span>カフェ</span><strong id="s3cafe">—</strong></div>
+        <div class="row"><span>Grab</span><strong id="s3grab">—</strong></div>
+        <div class="row"><span>予備費・貯蓄（日本円）</span><strong id="s3save">—</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="advice" style="background:#fbfefd">
+    <h3>余裕分を全部その用途に使った場合の目安</h3>
+    <div class="row"><span>日本料理</span><strong id="jpFreq">—</strong></div>
+    <div class="row"><span>ローカル外食</span><strong id="localFreq">—</strong></div>
+    <div class="row"><span>カフェ</span><strong id="cafeFreq">—</strong></div>
+    <div class="row"><span>Grab</span><strong id="grabFreq">—</strong></div>
+    <div class="hint">
+      ※それぞれを同時にこの回数使えるという意味ではありません。
+      「余裕分を全部その1項目に回したら」という比較用の数字です。
+    </div>
+  </div>
+
+  <div class="advice">
+    <h3>この予算なら</h3>
+    <ul id="adviceList"></ul>
+  </div>
+
+  <div class="note" id="warning">
+    教育費、ビザ・在留手続き、海外旅行保険、大きな医療費などは別に考える必要があります。
+  </div>
+</aside>
+
+  <details style="margin-top:18px">
+    <summary style="cursor:pointer;font-weight:800">数字の根拠（2026年8月確認）</summary>
+    <div class="hint" style="margin-top:10px">
+      <strong>ローカルの食事：</strong>
+      学生向けの安い食事は1食2.5万〜3万VND程度という報道例があります。
+      一方、ダナンの「安いレストラン」の公開集計は1食約6万VNDです。
+      このためツールのローカル外食初期値は5万VNDにしています。<br><br>
+
+      <strong>カフェ：</strong>
+      ダナンのカプチーノ公開集計が約4.4万VNDのため、初期値を4.5万VNDにしています。<br><br>
+
+      <strong>日本料理：</strong>
+      ダナンの日本食ランチには、カレー13万VND、定食15万VND、丼18万〜20万VND程度の実例があります。
+      初期値は15万VNDにしています。<br><br>
+
+      <strong>Grab：</strong>
+      ダナンのGrabCarは2kmまで2.2万VND、以降1kmあたり1.1万VND＋時間料金が基本で、
+      需要による変動料金があります。市内の短〜中距離を想定し、初期値は6万VNDです。<br><br>
+
+      <strong>自宅インターネット：</strong>
+      FPTの2026年8月料金は月19.5万VNDから。上位プランは29.5万VND程度です。<br><br>
+
+      <strong>注意：</strong>
+      250万／350万／700万VNDの3つの生活基準は、公開統計そのものではなく、
+      上記価格とダナンの生活感を比較するための「シナリオ」です。現地ヒアリングで更新する前提です。
+    </div>
+  </details>
+
+</main>
+
+<footer>
+  ※本ツールは、家賃などの固定費を除いた生活費を3つの比較基準で見るための試算ツールです。250万・350万・700万VNDの基準はシナリオとして仮置きで、公開前にダナンの学生・生活者の実感値で調整する前提です。教育費・保険・ビザ・大きな医療費などは別途必要です。
+</footer>
+</div>
+
+<script>
+const budgetSlider = document.getElementById('budgetVnd');
+const budgetVndInput = document.getElementById('budgetVndInput');
+const budgetJpyInput = document.getElementById('budgetJpyInput');
+const rateInput = document.getElementById('rate');
+const adults=document.getElementById('adults');
+const children=document.getElementById('children');
+let priority='balanced';
+
+const vnd=n=>Math.round(n).toLocaleString('ja-JP')+' ₫';
+const jpy=(n,r)=>'約 '+Math.round((n/r)/1000).toLocaleString('ja-JP')+',000 円';
+
+function householdBaselines(){
+  const a=+adults.value, c=+children.value;
+
+  // All figures exclude rent, home internet, utilities, education and insurance.
+  // These are comparison lines, not guaranteed minimum living costs.
+  const student = 2500000 + Math.max(0,a-1)*1800000 + c*1200000;
+  const localStandard = 3500000 + Math.max(0,a-1)*2400000 + c*1500000;
+  const japaneseComfort = 7000000 + Math.max(0,a-1)*4500000 + c*2500000;
+
+  return {student, localStandard, japaneseComfort};
+}
+
+function householdBaseline(){
+  // Lifestyle examples use the middle "local standard" line.
+  return householdBaselines().localStandard;
+}
+
+
+
+function simpleFreq(amount, unit){
+  if(amount <= 0 || unit <= 0) return '0回';
+  const monthly = amount / unit;
+  const weekly = monthly / 4.345;
+  if(weekly < 0.7) return '月 ' + monthly.toFixed(1) + '回';
+  if(weekly < 10) return '週 ' + weekly.toFixed(1) + '回';
+  return '週 ' + Math.round(weekly) + '回';
+}
+
+function weeklyFreq(surplus, unit){
+  if(surplus <= 0 || unit <= 0) return '余裕なし';
+  const monthly = surplus / unit;
+  const weekly = monthly / 4.345;
+  if(weekly < 0.25) return '月 ' + Math.max(0, monthly).toFixed(1) + '回';
+  if(weekly < 10) return '週 ' + weekly.toFixed(1) + '回';
+  return '週 ' + Math.round(weekly) + '回';
+}
+
+function adviceFor(surplus, base, budgetVal){
+  const ratio=budgetVal/base;
+  let list=[];
+  if(ratio < .9){
+    list=[
+      'ローカル学生の下限目安を下回ります。',
+      '食費・移動・日用品をかなり抑えないと厳しい可能性があります。',
+      '家賃などの固定費は別に必要なので、総予算ではさらに余裕を見てください。'
+    ];
+  } else if(ratio < 1.35){
+    list=[
+      'かなり節約を意識した生活になります。',
+      'ローカル食中心で、外食や移動の回数を抑える前提です。',
+      '日本食・Grab・娯楽を増やすと予算超過しやすいです。'
+    ];
+  } else if(ratio < 2.2){
+    list=[
+      'ローカル生活を土台に、いくつかの項目へ余裕を回せます。',
+      '住居、食事、移動のどこを優先するかで満足度が変わります。',
+      '生活基本費を確保してから残りを娯楽・貯蓄へ回すと管理しやすいです。'
+    ];
+  } else if(ratio < 3.5){
+    list=[
+      '住居や食事にある程度選択肢を持てる予算です。',
+      '日本食、Grab、カフェなどを組み込みやすくなります。',
+      '保険や医療、旅行などの別枠費用も確保しやすい水準です。'
+    ];
+  } else {
+    list=[
+      '日常生活費としてはかなり余裕のある予算です。',
+      '生活の質よりも、住居・教育・保険など大きな固定費の選び方が総額を左右します。',
+      '余剰分を貯蓄や旅行費として別管理する方が分かりやすいです。'
+    ];
+  }
+
+  const extra={
+    housing:'余裕分は住居へ回す設定です。立地・広さ・設備の優先順位を先に決めると探しやすくなります。',
+    food:'余裕分は食事へ回す設定です。上の「日本料理」の週回数を目安に、外食頻度を調整できます。',
+    comfort:'余裕分は便利さへ回す設定です。Grab、デリバリー、カフェ等を使いやすくなります。',
+    saving:'節約優先です。余裕分を使い切らず、医療・帰国・更新手続きなどの予備費として残す設計がおすすめです。',
+    balanced:'住居・食事・移動に偏らせず、余裕分を分散する想定です。'
+  };
+  list.push(extra[priority]);
+  return list;
+}
+
+function calc(){
+  const r = Math.max(1, Number(rateInput.value) || 170);
+  const b = Math.max(0, Number(budgetVndInput.value) || 0);
+  const baselines = householdBaselines();
+  const base = baselines.localStandard;
+  const surplus=b-base;
+  const ratio=b/base;
+
+  const jpMeal=Math.max(1,+document.getElementById('jpMeal').value||150000);
+  const localMeal=Math.max(1,+document.getElementById('localMeal').value||50000);
+  const cafe=Math.max(1,+document.getElementById('cafe').value||45000);
+  const grab=Math.max(1,+document.getElementById('grab').value||60000);
+
+  // Amount available above the basic living line.
+  const extra=Math.max(0,surplus);
+
+  // Three examples for allocating the amount above the baseline.
+  // ① Save-first: 20% Japanese meals, 10% cafe, 10% Grab, 60% reserve/savings
+  // ② Balanced:   30% Japanese meals, 15% cafe, 20% Grab, 35% reserve/savings
+  // ③ Convenience:25% Japanese meals, 15% cafe, 40% Grab, 20% reserve/savings
+  const scenarios=[
+    {jp:.20,cafe:.10,grab:.10,save:.60,prefix:'s1'},
+    {jp:.30,cafe:.15,grab:.20,save:.35,prefix:'s2'},
+    {jp:.25,cafe:.15,grab:.40,save:.20,prefix:'s3'}
+  ];
+  scenarios.forEach(s=>{
+    document.getElementById(s.prefix+'jp').textContent=simpleFreq(extra*s.jp,jpMeal);
+    document.getElementById(s.prefix+'cafe').textContent=simpleFreq(extra*s.cafe,cafe);
+    document.getElementById(s.prefix+'grab').textContent=simpleFreq(extra*s.grab,grab);
+    document.getElementById(s.prefix+'save').textContent=jpy(extra*s.save,r);
+  });
+
+  document.getElementById('jpFreq').textContent=weeklyFreq(Math.max(0,surplus),jpMeal);
+  document.getElementById('localFreq').textContent=weeklyFreq(Math.max(0,surplus),localMeal);
+  document.getElementById('cafeFreq').textContent=weeklyFreq(Math.max(0,surplus),cafe);
+  document.getElementById('grabFreq').textContent=weeklyFreq(Math.max(0,surplus),grab);
+
+  document.getElementById('budgetVndOut').textContent = vnd(b);
+  
+  document.getElementById('totalVnd').textContent=vnd(b);
+  document.getElementById('totalJpy').textContent=jpy(b,r);
+  document.getElementById('baseline').textContent=vnd(base);
+  document.getElementById('surplus').textContent=(surplus>=0?'+ ':'- ')+vnd(Math.abs(surplus));
+
+  document.getElementById('studentBase').textContent=vnd(baselines.student);
+  document.getElementById('localBase').textContent=vnd(baselines.localStandard);
+  document.getElementById('japaneseBase').textContent=vnd(baselines.japaneseComfort);
+
+  function compareText(budgetValue, baselineValue){
+    const mult = baselineValue > 0 ? budgetValue / baselineValue : 0;
+    const diff = budgetValue - baselineValue;
+    if(diff < 0){
+      return '基準より ' + vnd(Math.abs(diff)) + ' 少ない';
+    }
+    return '基準の約 ' + mult.toFixed(1) + '倍 ／ ' + vnd(diff) + ' 余裕';
+  }
+  document.getElementById('studentCompare').textContent=compareText(b, baselines.student);
+  document.getElementById('localCompare').textContent=compareText(b, baselines.localStandard);
+  document.getElementById('japaneseCompare').textContent=compareText(b, baselines.japaneseComfort);
+
+  let status=document.getElementById('status');
+  status.className='status';
+  if(ratio<.9){
+    status.textContent='ローカル標準を下回る：かなり節約が必要';
+    status.classList.add('low');
+  } else if(ratio<1.35){
+    status.textContent='ローカル標準付近：節約寄り';
+    status.classList.add('mid');
+  } else if(ratio<2.2){
+    status.textContent='ローカル標準＋α：選択肢あり';
+    status.classList.add('mid');
+  } else {
+    status.textContent='ローカル標準よりかなり余裕あり';
+    status.classList.add('good');
+  }
+
+  document.getElementById('bar').style.width=Math.min(100,Math.max(0,ratio/3*100))+'%';
+
+  const summary=document.getElementById('lifestyleSummary');
+  const jpWeekly=(extra*.30/jpMeal)/4.345;
+  const cafeWeekly=(extra*.15/cafe)/4.345;
+  const grabWeekly=(extra*.20/grab)/4.345;
+  const saveJpy=(extra*.35)/r;
+
+  if(ratio < .9){
+    summary.textContent='ローカル標準より低い水準です。ただし、学生・節約ラインと比べると暮らせる可能性があります。食費・移動・日用品を優先する想定です。';
+  } else if(ratio < 1.35){
+    summary.textContent='ローカル標準に近い節約寄りの生活。日本料理やGrabは「たまに楽しむ」くらいが現実的です。';
+  } else if(ratio < 2.2){
+    summary.textContent='ローカル生活を土台に、日本料理 週'+jpWeekly.toFixed(1)+'回・カフェ 週'+cafeWeekly.toFixed(1)+'回・Grab 週'+grabWeekly.toFixed(1)+'回ほどを組み込みつつ、約'+Math.round(saveJpy/1000).toLocaleString('ja-JP')+',000円を予備費・貯蓄に回すイメージです。';
+  } else {
+    summary.textContent='日本料理やカフェ、Grabを日常に組み込みやすく、約'+Math.round(saveJpy/1000).toLocaleString('ja-JP')+',000円を予備費・貯蓄に回す余裕も見込めます。';
+  }
+
+  const ul=document.getElementById('adviceList');
+  ul.innerHTML='';
+  adviceFor(surplus,base,b).forEach(t=>{
+    const li=document.createElement('li'); li.textContent=t; ul.appendChild(li);
+  });
+
+  const c=+children.value;
+  document.getElementById('warning').textContent =
+    c>0
+    ? '子どもがいる場合、学校・幼稚園・保育費はこの基準に含めていません。教育費は別枠で追加してください。'
+    : '教育費、ビザ・在留手続き、海外旅行保険、大きな医療費などは別に考える必要があります。';
+}
+
+
+function clampSlider(vndValue){
+  const min = Number(budgetSlider.min);
+  const max = Number(budgetSlider.max);
+  return Math.min(max, Math.max(min, vndValue));
+}
+
+function syncFromVnd(){
+  const r = Math.max(1, Number(rateInput.value) || 170);
+  const vndValue = Math.max(0, Number(budgetVndInput.value) || 0);
+
+  // Sync yen
+  budgetJpyInput.value = Math.round(vndValue / r);
+
+  // Sync slider (slider has a limited visible range)
+  budgetSlider.value = clampSlider(vndValue);
+
+  calc();
+}
+
+function syncFromJpy(){
+  const r = Math.max(1, Number(rateInput.value) || 170);
+  const jpyValue = Math.max(0, Number(budgetJpyInput.value) || 0);
+  const vndValue = Math.round(jpyValue * r / 100000) * 100000;
+
+  // Sync VND
+  budgetVndInput.value = vndValue;
+
+  // Sync slider
+  budgetSlider.value = clampSlider(vndValue);
+
+  calc();
+}
+
+function syncFromSlider(){
+  const vndValue = Number(budgetSlider.value);
+  const r = Math.max(1, Number(rateInput.value) || 170);
+
+  // Sync VND
+  budgetVndInput.value = vndValue;
+
+  // Sync yen
+  budgetJpyInput.value = Math.round(vndValue / r);
+
+  calc();
+}
+
+// Direct VND entry
+budgetVndInput.addEventListener('input', syncFromVnd);
+budgetVndInput.addEventListener('change', syncFromVnd);
+
+// Direct JPY entry
+budgetJpyInput.addEventListener('input', syncFromJpy);
+budgetJpyInput.addEventListener('change', syncFromJpy);
+
+// Slider
+budgetSlider.addEventListener('input', syncFromSlider);
+budgetSlider.addEventListener('change', syncFromSlider);
+
+// Exchange rate: preserve VND, refresh yen display
+rateInput.addEventListener('input', syncFromVnd);
+rateInput.addEventListener('change', syncFromVnd);
+
+// Other controls
+document.querySelectorAll('select').forEach(el => el.addEventListener('input', calc));
+['jpMeal','localMeal','cafe','grab'].forEach(id=>{
+  document.getElementById(id).addEventListener('input', calc);
+});
+
+document.querySelectorAll('[data-priority]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('[data-priority]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    priority=btn.dataset.priority;
+    calc();
+  });
+});
+const jsStatus = document.getElementById('jsStatus');
+try {
+  syncFromVnd();
+  if (jsStatus) {
+    jsStatus.textContent = 'JavaScript正常動作：VND・日本円・スライダーは連動しています。';
+    jsStatus.classList.add('ok');
+  }
+} catch (err) {
+  console.error(err);
+  if (jsStatus) {
+    jsStatus.textContent = '計算処理でエラーが発生しました：' + err.message;
+    jsStatus.classList.remove('ok');
+  }
+}
+</script>
+<!--
+Data calibration checked 2026-08-29:
+- Tuoi Tre: student meal examples 25k-30k VND (2025)
+- Numbeo Da Nang: inexpensive meal ~60k, cappuccino ~43.7k (2026)
+- Sushimaru Da Nang menu: Japanese lunch ~130k-200k
+- Grab Vietnam: Da Nang GrabCar 22k first 2km, 11k/km + 400/min, dynamic pricing
+- FPT official Aug 2026: home internet from 195k, META 295k
+- Expatistan Da Nang Aug 2026: studio normal ~7.74m, expensive ~10.21m, 1-person utilities ~0.94m
+-->
+</body>
+</html>
